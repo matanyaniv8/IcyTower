@@ -16,9 +16,9 @@
         const ctx = canvas.getContext('2d');
 
         // Game settings
-        const gravity = 0.5;
+        const gravity = 0.4;
         const friction = 0.8;
-        const baseJump = -10; // Base jump velocity
+        const baseJump = -10;
 
         // Player
         let player = {
@@ -34,7 +34,7 @@
 
         // Platforms
         let platforms = [];
-        for(let i = 0; i < 10; i++) {
+        for (let i = 0; i < 10; i++) {
             platforms.push({
                 x: Math.random() * (canvas.width - 50),
                 y: canvas.height - (100 * i) - 50,
@@ -43,13 +43,17 @@
             });
         }
 
+        // Scoring
+        let score = 0;
+        let lastPlatformY = canvas.height; // Track the last platform Y position the player was on
+
         // Key Listener
         let keys = [];
         window.addEventListener('keydown', function(e) {
             keys[e.keyCode] = true;
-            if (e.keyCode == 32 && !player.jumping) { // Space key for jump
+            if (e.keyCode == 32 && !player.jumping) {
                 player.jumping = true;
-                player.velY = baseJump - Math.abs(player.velX); // Higher jump if running faster
+                player.velY = baseJump;
             }
         });
         window.addEventListener('keyup', function(e) {
@@ -57,16 +61,12 @@
         });
 
         function updateGame() {
-            // Check key inputs
-            if (keys[39]) { // right arrow
-                if (player.velX < player.speed) {
-                    player.velX++;
-                }
-            }         
-            if (keys[37]) { // left arrow
-                if (player.velX > -player.speed) {
-                    player.velX--;
-                }
+            // Player movement
+            if (keys[39]) {
+                if (player.velX < player.speed) player.velX++;
+            }
+            if (keys[37]) {
+                if (player.velX > -player.speed) player.velX--;
             }
 
             player.velX *= friction;
@@ -77,56 +77,55 @@
 
             // Screen scroll
             if (player.y < canvas.height / 4) {
-                player.y += Math.abs(player.velY);
+                let deltaY = Math.abs(player.velY);
+                player.y += deltaY;
                 platforms.forEach(platform => {
-                    platform.y += Math.abs(player.velY);
-                    if (platform.y > canvas.height) {
-                        platform.y = 0;
-                        platform.x = Math.random() * (canvas.width - platform.width);
-                    }
+                    platform.y += deltaY;
                 });
             }
 
-            // Collision with the canvas edges
-            if (player.x >= canvas.width - player.width) {
-                player.x = canvas.width - player.width;
-            } else if (player.x <= 0) {
-                player.x = 0;
-            }
+            // Collision and scoring
+            platforms.forEach(platform => {
+                if (player.x < platform.x + platform.width &&
+                    player.x + player.width > platform.x &&
+                    player.y < platform.y &&
+                    player.y + player.height > platform.y &&
+                    player.velY >= 0) {
+                    player.jumping = false;
+                    player.velY = 0;
+                    player.y = platform.y - player.height;
 
-            if(player.y >= canvas.height - player.height){
+                    // Increment score if this platform is higher than the last one landed on
+                    if (platform.y < lastPlatformY) {
+                        score++;
+                        lastPlatformY = platform.y;
+                    }
+                }
+            });
+
+            // Edge collision
+            if (player.x >= canvas.width - player.width) player.x = canvas.width - player.width;
+            else if (player.x <= 0) player.x = 0;
+
+            if (player.y >= canvas.height - player.height) {
                 player.y = canvas.height - player.height;
                 player.jumping = false;
                 player.velY = 0;
             }
 
-            // Platform collision
-            platforms.forEach(platform => {
-                if (
-                    player.x < platform.x + platform.width &&
-                    player.x + player.width > platform.x &&
-                    player.y + player.height > platform.y &&
-                    player.y + player.height < platform.y + platform.height &&
-                    player.velY >= 0
-                ) {
-                    player.jumping = false;
-                    player.velY = 0;
-                    player.y = platform.y - player.height;
-                }
-            });
-
-            // Clear canvas
+            // Drawing
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Draw player
             ctx.fillStyle = 'red';
             ctx.fillRect(player.x, player.y, player.width, player.height);
 
-            // Draw platforms
             platforms.forEach(platform => {
                 ctx.fillStyle = 'black';
                 ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
             });
+
+            ctx.fillStyle = 'black';
+            ctx.font = '16px Arial';
+            ctx.fillText("Score: " + score, 10, 30);
 
             requestAnimationFrame(updateGame);
         }
