@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Platformer Game with Screen Scroll</title>
+    <title>Platformer Game with Improved Scoring</title>
     <style>
         body, html { margin: 0; padding: 0; overflow: hidden; }
         #gameCanvas { background-color: #87CEEB; }
@@ -34,18 +34,21 @@
 
         // Platforms
         let platforms = [];
+        let platformId = 0; // Initialize platform ID
         for (let i = 0; i < 10; i++) {
             platforms.push({
+                id: platformId++, // Assign unique ID to each platform
                 x: Math.random() * (canvas.width - 50),
                 y: canvas.height - (100 * i) - 50,
                 width: 100,
-                height: 10
+                height: 10,
+                standingTime: 0
             });
         }
 
         // Scoring
         let score = 0;
-        let lastPlatformY = canvas.height; // Track the last platform Y position the player was on
+        let landedPlatforms = new Set(); // Track IDs of platforms the player has landed on
 
         // Key Listener
         let keys = [];
@@ -62,10 +65,10 @@
 
         function updateGame() {
             // Player movement
-            if (keys[39]) {
+            if (keys[39]) { // right arrow key
                 if (player.velX < player.speed) player.velX++;
             }
-            if (keys[37]) {
+            if (keys[37]) { // left arrow key
                 if (player.velX > -player.speed) player.velX--;
             }
 
@@ -95,10 +98,9 @@
                     player.velY = 0;
                     player.y = platform.y - player.height;
 
-                    // Increment score if this platform is higher than the last one landed on
-                    if (platform.y < lastPlatformY) {
+                    if (!landedPlatforms.has(platform.id)) {
                         score++;
-                        lastPlatformY = platform.y;
+                        landedPlatforms.add(platform.id); // Mark this platform as landed
                     }
                 }
             });
@@ -112,6 +114,22 @@
                 player.jumping = false;
                 player.velY = 0;
             }
+
+            // Add new platform if needed
+            const highestPlatformY = Math.min(...platforms.map(p => p.y));
+            if (highestPlatformY > 100) {
+                platforms.push({
+                    id: platformId++, // Ensure new platforms have unique IDs
+                    x: Math.random() * (canvas.width - 50),
+                    y: 0,
+                    width: 100,
+                    height: 10,
+                    standingTime: 0
+                });
+            }
+
+            // Optional: Remove platforms that have moved off the screen
+            platforms = platforms.filter(platform => platform.y < canvas.height + 50);
 
             // Drawing
             ctx.clearRect(0, 0, canvas.width, canvas.height);
