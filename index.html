@@ -120,7 +120,10 @@
 
                 // Make the platform fall if standingTime exceeds 3 seconds (180 frames at 60fps)
                 if (platform.standingTime > 180) {
-                    platform.y += 5; // Make the platform fall
+                    let t = canvas.height - platform.y
+                    for(let gap = t;gap > 0; gap -= 10){
+                        platform.y += gap * 0.5 // Make the platform fall
+                    }
                 }
             });
 
@@ -175,6 +178,17 @@
             platforms.forEach(platform => {
                 ctx.fillStyle = 'black';
                 ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+                // Check if platform ID is divisible by 10 (and not the first platform)
+                if (platform.id % 10 === 0 && platform.id !== 0) {
+                    ctx.fillStyle = 'white'; // Text color
+                    ctx.font = '12px Arial'; // Font size and family
+                    // Calculate text position to center it on the platform
+                    let text = platform.id.toString();
+                    let textWidth = ctx.measureText(text).width;
+                    let textX = platform.x + (platform.width - textWidth) / 2;
+                    let textY = platform.y + (platform.height / 2) + 6; // Adjust to center text vertically
+                    ctx.fillText(text, textX, textY);
+                }
             });
 
             ctx.fillStyle = 'black';
