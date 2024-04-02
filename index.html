@@ -86,25 +86,31 @@
         <ul id="scoresList"></ul>
     </div>
 </div>
-
 <script>
+    // Images
     const backgroundImage = new Image();
     const greyPlatformImage = new Image()
     const redPlatformImage = new Image();
     const playerImage = new Image();
+    const movingEnemyImage = new Image();
+    const constantEnemyImage = new Image();
     backgroundImage.src = './res/background.jpg'; // Set the source after defining the onload handler
     playerImage.src = './res/player.png'; // Update the path to your player image
     greyPlatformImage.src = './res/greyPlatform.png';
     redPlatformImage.src = './res/redPlatform.png';
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
+    movingEnemyImage.src = './res/pig.png';
+    constantEnemyImage.src = './res/bomb.png';
 
     // Game settings
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
     const gravity = 0.4;
     const friction = 0.8;
     const baseJump = -10;
     // Drawing setting for player printing
     const playerImageScale = 2.5;
+    const enemyScaleFactor = 1.5; // Example: Increase size by 50%
+
     // Game Variables
     let player = null
     let platforms = [];
@@ -182,8 +188,8 @@
                     type: Math.random() < 0.5 ? 'Type1' : 'Type2',
                     x: 20, // Starting position on the platform, ensure it's within bounds
                     movingDirection: 1, // Direction for Type2 enemy movement
-                    width: 20, // Enemy width
-                    height: 20 // Enemy height
+                    width: 25, // Enemy width
+                    height: 25 // Enemy height
                 } : null
             });
         }
@@ -236,10 +242,24 @@
                 let textY = platform.y + (platform.height / 2) + 6; // Adjust to center text vertically
                 ctx.fillText(text, textX, textY);
             }
+            // Drawing Enemies
             if (platform.enemy) {
-                ctx.fillStyle = platform.enemy.type === 'Type1' ? 'red' : 'blue';
+                let isTypeOne = platform.enemy.type === 'Type1'
+                let enemyImage = isTypeOne ? constantEnemyImage : movingEnemyImage;
                 let enemyX = platform.x + platform.enemy.x; // Calculate absolute position
-                ctx.fillRect(enemyX, platform.y - platform.enemy.height, platform.enemy.width, platform.enemy.height);
+                let enemyY = platform.y - platform.enemy.height;
+
+                // New dimensions
+                const drawWidth = isTypeOne ? platform.enemy.width * enemyScaleFactor * enemyScaleFactor : platform.enemy.width * enemyScaleFactor;
+                const drawHeight = isTypeOne ? platform.enemy.height * enemyScaleFactor * enemyScaleFactor : platform.enemy.height * enemyScaleFactor;
+
+                // Adjust position to keep the enemy centered
+                const drawX = enemyX - (drawWidth - platform.enemy.width * enemyScaleFactor) / 2;
+                const drawY = isTypeOne ? enemyY - (drawHeight - platform.enemy.height * 1.5) : enemyY - (drawHeight - platform.enemy.height);
+
+
+                // Draw the enemy image with new size
+                ctx.drawImage(enemyImage, drawX, drawY, drawWidth, drawHeight);
             }
         });
     }
