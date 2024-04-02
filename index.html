@@ -89,9 +89,13 @@
 
 <script>
     const backgroundImage = new Image();
-    backgroundImage.src = './res/background.jpg'; // Set the source after defining the onload handler
+    const greyPlatformImage = new Image()
+    const redPlatformImage = new Image();
     const playerImage = new Image();
-    playerImage.src = './res.png'; // Update the path to your player image
+    backgroundImage.src = './res/background.jpg'; // Set the source after defining the onload handler
+    playerImage.src = './res/player.png'; // Update the path to your player image
+    greyPlatformImage.src = './res/greyPlatform.png';
+    redPlatformImage.src = './res/redPlatform.png';
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
@@ -99,22 +103,14 @@
     const gravity = 0.4;
     const friction = 0.8;
     const baseJump = -10;
-
-    // Player
-    /* let player = {
-         x: canvas.width / 2,
-         y: canvas.height - 150,
-         width: 20,
-         height: 20,
-         speed: 5,
-         velX: 0,
-         velY: 0,
-         jumping: false
-     };*/
-
+    // Drawing setting for player printing
+    const playerImageScale = 2.5;
+    // Game Variables
     let player = null
     let platforms = [];
     let platformId = 0;
+    let enemySpeed = 1; // Adjust this value to find a suitable speed
+
     initPlatformsAndPlayer();
 
     // Scoring
@@ -143,7 +139,7 @@
 
         const newPlatform = {
             id: platformId++,
-            x: Math.random() * (canvas.width - 50),
+            x: Math.random() * (canvas.width - 100),
             y: 0, // Position for new platforms at the top
             width: 100,
             height: 10,
@@ -164,8 +160,8 @@
         player = {
             x: canvas.width / 2,
             y: canvas.height - 150,
-            width: 20,
-            height: 20,
+            width: 25,
+            height: 25,
             speed: 5,
             velX: 0,
             velY: 0,
@@ -177,7 +173,7 @@
             let hasEnemy = Math.random() < 0.05 || i === 5; // Ensure platform 5 has an enemy for testing
             platforms.push({
                 id: platformId++,
-                x: Math.random() * (canvas.width - 50),
+                x: Math.random() * (canvas.width - 100),
                 y: canvas.height - (100 * i) - 50,
                 width: 100,
                 height: 10,
@@ -191,13 +187,59 @@
                 } : null
             });
         }
+
         platforms.forEach(platform => {
             if (platform.enemy && platform.enemy.type === 'Type2') {
                 // Adjust speed or direction based on game logic
-                platform.enemy.x += platform.enemy.movingDirection * 2; // Movement speed
-                if (platform.enemy.x <= 0 || platform.enemy.x >= platform.width - platform.enemy.width) {
+                platform.enemy.x += platform.enemy.movingDirection * enemySpeed; // Movement speed
+                if (platform.enemy.x <= 0) {
+                    platform.enemy.x = 0; // Prevent moving beyond the left edge
+                    platform.enemy.movingDirection *= -1; // Change direction
+                } else if (platform.enemy.x + platform.enemy.width >= platform.width) {
+                    platform.enemy.x = platform.width - platform.enemy.width; // Prevent moving beyond the right edge
                     platform.enemy.movingDirection *= -1; // Change direction
                 }
+            }
+        });
+    }
+
+
+    function drawPlayer() {
+        let playerHeightToAdd = canvas.height - player.y === player.height ? 10 : 0;
+
+        // Calculate the new size based on the scale factor
+        const drawWidth = player.width * playerImageScale;
+        const drawHeight = player.height * playerImageScale;
+
+        // Adjust the draw position so that the player's logical and visual positions align
+        const drawX = player.x - (drawWidth - player.width) / 2;
+        const drawY = player.y - (drawHeight - player.height) / 2;
+
+        // Draw the player image with the new size and adjusted position
+        ctx.drawImage(playerImage, drawX, drawY - playerHeightToAdd, drawWidth, drawHeight);
+    }
+
+    function drawPlatforms() {
+        let platformImage = null;
+
+        platforms.forEach(platform => {
+            platformImage = (platform.enemy) ? redPlatformImage : greyPlatformImage
+            ctx.drawImage(platformImage, platform.x, platform.y, platform.width + 5, platform.height + 10);
+            // Check if platform ID is divisible by 10 (and not the first platform)
+            if (platform.id % 10 === 0 && platform.id !== 0) {
+                ctx.fillStyle = 'white'; // Text color
+                ctx.font = '12px Arial'; // Font size and family
+                // Calculate text position to center it on the platform
+                let text = platform.id.toString();
+                let textWidth = ctx.measureText(text).width;
+                let textX = platform.x + (platform.width - textWidth) / 2;
+                let textY = platform.y + (platform.height / 2) + 6; // Adjust to center text vertically
+                ctx.fillText(text, textX, textY);
+            }
+            if (platform.enemy) {
+                ctx.fillStyle = platform.enemy.type === 'Type1' ? 'red' : 'blue';
+                let enemyX = platform.x + platform.enemy.x; // Calculate absolute position
+                ctx.fillRect(enemyX, platform.y - platform.enemy.height, platform.enemy.width, platform.enemy.height);
             }
         });
     }
@@ -262,16 +304,6 @@
         // Background
         ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
 
-        platforms.forEach(platform => {
-            if (platform.enemy && platform.enemy.type === 'Type2') {
-                // Adjust speed or direction based on game logic
-                platform.enemy.x += platform.enemy.movingDirection * 2; // Movement speed
-                if (platform.enemy.x <= 0 || platform.enemy.x >= platform.width - platform.enemy.width) {
-                    platform.enemy.movingDirection *= -1; // Change direction
-                }
-            }
-        });
-
         // At the beginning of your game update loop, check if it's game over
         if (isGameOver()) {
             // Stop the game loop or handle game over
@@ -279,17 +311,7 @@
             updateLeaderboard();
             document.getElementById('gameOverContainer').style.display = 'block';
             return; // Stops the animation loop
-        } /*else {
-            // Clear the canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Draw the background image
-            ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
-
-            // Continue with the rest of your game rendering...
-
-            requestAnimationFrame(updateGame);
-        }*/
+        }
 
         // Player movement logic
         if (keys[39]) { // Right arrow key
@@ -394,44 +416,22 @@
         platforms.forEach(platform => {
             if (platform.enemy && platform.enemy.type === 'Type2') {
                 // Adjust speed or direction based on game logic
-                platform.enemy.x += platform.enemy.movingDirection * 2; // Adjust speed as necessary
-
-                // Correct boundary checks
-                // Ensure we're checking the enemy's position relative to the platform correctly
-                let enemyRightEdge = platform.enemy.x + platform.enemy.width;
-                if (platform.enemy.x <= 0 || enemyRightEdge >= platform.width) {
+                platform.enemy.x += platform.enemy.movingDirection * enemySpeed; // Movement speed
+                if (platform.enemy.x <= 0) {
+                    platform.enemy.x = 0; // Prevent moving beyond the left edge
+                    platform.enemy.movingDirection *= -1; // Change direction
+                } else if (platform.enemy.x + platform.enemy.width >= platform.width) {
+                    platform.enemy.x = platform.width - platform.enemy.width; // Prevent moving beyond the right edge
                     platform.enemy.movingDirection *= -1; // Change direction
                 }
             }
         });
 
         // Drawing logic
-
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = 'red';
-        ctx.fillRect(player.x, player.y, player.width, player.height);
-
-        platforms.forEach(platform => {
-            ctx.fillStyle = 'black';
-            ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
-            // Check if platform ID is divisible by 10 (and not the first platform)
-            if (platform.id % 10 === 0 && platform.id !== 0) {
-                ctx.fillStyle = 'white'; // Text color
-                ctx.font = '12px Arial'; // Font size and family
-                // Calculate text position to center it on the platform
-                let text = platform.id.toString();
-                let textWidth = ctx.measureText(text).width;
-                let textX = platform.x + (platform.width - textWidth) / 2;
-                let textY = platform.y + (platform.height / 2) + 6; // Adjust to center text vertically
-                ctx.fillText(text, textX, textY);
-            }
-            if (platform.enemy) {
-                ctx.fillStyle = platform.enemy.type === 'Type1' ? 'red' : 'blue';
-                let enemyX = platform.x + platform.enemy.x; // Calculate absolute position
-                ctx.fillRect(enemyX, platform.y - platform.enemy.height, platform.enemy.width, platform.enemy.height);
-            }
-        });
+        drawPlayer();
+        drawPlatforms();
 
         ctx.fillStyle = 'black';
         ctx.font = '16px Arial';
