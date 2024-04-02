@@ -142,12 +142,15 @@
         if (platformId % 20 === 0) { // Example: Add a guaranteed enemy on every 20th platform
             hasEnemy = true;
         }
+        // a platform with an enemy should be wider
+        let platformWidth = hasEnemy ? 150 : 100 ;
+        //const isWider = Math.random() < 0.3; // 30% chance to be a wider platform // todo: decide logic for platform width
 
         const newPlatform = {
             id: platformId++,
-            x: Math.random() * (canvas.width - 100),
+            x: Math.random() * (canvas.width - platformWidth),
             y: 0, // Position for new platforms at the top
-            width: 100,
+            width: platformWidth,
             height: 10,
             standingTime: 0,
             enemy: hasEnemy ? {
@@ -177,11 +180,13 @@
 
         for (let i = 0; i < 10; i++) {
             let hasEnemy = Math.random() < 0.05 || i === 5; // Ensure platform 5 has an enemy for testing
+            // a platform with an enemy should be wider
+            let platformWidth = hasEnemy ? 150 : 100 ;
             platforms.push({
                 id: platformId++,
                 x: Math.random() * (canvas.width - 100),
                 y: canvas.height - (100 * i) - 50,
-                width: 100,
+                width: platformWidth,
                 height: 10,
                 standingTime: 0,
                 enemy: hasEnemy ? {
