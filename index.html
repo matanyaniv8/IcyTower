@@ -15,18 +15,63 @@
             background-color: #87CEEB;
         }
 
+        #gameOverContainer {
+            width: 80%;
+            max-width: 300px;
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            color: #D8000C;
+        }
+
         #gameOverContainer h2, #gameOverContainer h3 {
             color: #D8000C;
         }
 
+        #leaderboard {
+            text-align: left;
+            margin-top: 20px;
+        }
+
         #leaderboard ul {
-            list-style-type: none;
-            padding: 0;
+            background-color: #f7f7f7;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
         }
 
         #leaderboard li {
-            margin: 5px 0;
-            color: #000;
+            background-color: #e9e9e9;
+            padding: 8px;
+            margin-bottom: 5px;
+            border-radius: 3px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        #playAgainButton {
+            background-color: #4CAF50; /* Green */
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+            width: 100%; /* Makes the button expand to the full width of its parent container */
+        }
+
+        /* Improve overall alignment and presentation */
+        body, html {
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
         }
     </style>
 </head>
@@ -43,6 +88,10 @@
 </div>
 
 <script>
+    const backgroundImage = new Image();
+    backgroundImage.src = './res/background.jpg'; // Set the source after defining the onload handler
+    const playerImage = new Image();
+    playerImage.src = './res.png'; // Update the path to your player image
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
@@ -177,8 +226,9 @@
 
     function startGame() {
         platforms = [];
-        platformId = 0;
+        platformId = 1;
         score = 0;
+        landedPlatforms.clear()
         initPlatformsAndPlayer();
         // Hide the game over container
         document.getElementById('gameOverContainer').style.display = 'none';
@@ -209,6 +259,9 @@
     }
 
     function updateGame() {
+        // Background
+        ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+
         platforms.forEach(platform => {
             if (platform.enemy && platform.enemy.type === 'Type2') {
                 // Adjust speed or direction based on game logic
@@ -329,7 +382,7 @@
             player.velY = 0;
         }
 
-// Check if a new platform is needed
+        // Check if a new platform is needed
         const highestPlatformY = Math.min(...platforms.map(p => p.y));
         if (highestPlatformY > 100) { // Adjust based on your game's needs
             addNewPlatform(); // Add a new platform at the top
@@ -340,18 +393,22 @@
 
         platforms.forEach(platform => {
             if (platform.enemy && platform.enemy.type === 'Type2') {
-                // Move enemy
-                platform.enemy.x += platform.enemy.movingDirection * 2; // Adjust speed as needed
-                // Turn around at platform edges
-                if (platform.enemy.x <= platform.x || platform.enemy.x + platform.enemy.width >= platform.x + platform.width) {
-                    platform.enemy.movingDirection *= -1;
+                // Adjust speed or direction based on game logic
+                platform.enemy.x += platform.enemy.movingDirection * 2; // Adjust speed as necessary
+
+                // Correct boundary checks
+                // Ensure we're checking the enemy's position relative to the platform correctly
+                let enemyRightEdge = platform.enemy.x + platform.enemy.width;
+                if (platform.enemy.x <= 0 || enemyRightEdge >= platform.width) {
+                    platform.enemy.movingDirection *= -1; // Change direction
                 }
             }
         });
 
-
         // Drawing logic
+
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
         ctx.fillStyle = 'red';
         ctx.fillRect(player.x, player.y, player.width, player.height);
 
