@@ -116,6 +116,7 @@
     let platforms = [];
     let platformId = 0;
     let enemySpeed = 1; // Adjust this value to find a suitable speed
+    let epsilon = 0.05;
 
     initPlatformsAndPlayer();
 
@@ -381,6 +382,9 @@
                 // Mark platform as landed for scoring
                 if (!landedPlatforms.has(platform.id)) {
                     score++;
+                    // Once the player gets up with scores,
+                    // increase the moving enemies speed for a more challenging game.
+                    enemySpeed = enemySpeed < 2 ? enemySpeed + epsilon : enemySpeed;
                     landedPlatforms.add(platform.id);
                 }
 
