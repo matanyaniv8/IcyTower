@@ -5,7 +5,7 @@ const redPlatformImage = new Image();
 const playerImage = new Image();
 const movingEnemyImage = new Image();
 const constantEnemyImage = new Image();
-backgroundImage.src = './res/background.jpg'; // Set the source after defining the onload handler
+backgroundImage.src = './res/Background/Blue.png'; // Set the source after defining the onload handler
 playerImage.src = './res/player.png'; // Update the path to your player image
 greyPlatformImage.src = './res/greyPlatform.png';
 redPlatformImage.src = './res/redPlatform.png';
@@ -21,6 +21,7 @@ const baseJump = -10;
 // Drawing setting for player printing
 const playerImageScale = 2.5;
 const enemyScaleFactor = 1.5; // Example: Increase size by 50%
+const enemyDimension = 10;
 
 // Game Variables
 let player = null
@@ -80,42 +81,8 @@ function addNewPlatformAt(yPosition) {
             type: Math.random() < 0.5 ? 'Type1' : 'Type2',
             x: Math.random() * (platformWidth - 20),
             movingDirection: Math.random() < 0.5 ? -1 : 1,
-            width: 10,
-            height: 10
-        } : null
-    });
-}
-
-
-/**
- * Add a new platform to the platform array.
- */
-function addNewPlatform() {
-    let isMovingPlatform = Math.random() < 0.06; // 6% chance for the platform to move
-    // a platform with an enemy should be wider
-    let platformWidth = hasEnemy ? 150 : 100; // a platform with an enemy should be wider
-    let movingDirection = isMovingPlatform ? (Math.random() < 0.5 ? 1 : -1) : 0;
-    let hasEnemy = Math.random() < 0.05; // 5% chance to add an enemy
-    if (platformId % 20 === 0) { // Example: Add a guaranteed enemy on every 20th platform
-        hasEnemy = true;
-    }
-
-    platforms.push({
-        id: platformId++,
-        x: Math.random() * (canvas.width - platformWidth),
-        y: yPosition,
-        width: platformWidth,
-        height: 10,
-        standingTime: 0,
-        isMoving: isMovingPlatform,
-        movingDirection: movingDirection,
-        originalY: yPosition,
-        enemy: hasEnemy ? {
-            type: Math.random() < 0.5 ? 'Type1' : 'Type2',
-            x: Math.random() * (platformWidth - 20),
-            movingDirection: Math.random() < 0.5 ? -1 : 1,
-            width: 20,
-            height: 20
+            width: enemyDimension,
+            height: enemyDimension
         } : null
     });
 }
@@ -158,8 +125,8 @@ function initPlatformsAndPlayer() {
                 type: Math.random() < 0.5 ? 'Type1' : 'Type2',
                 x: Math.random() * (platformWidth - 20), // Ensure enemy is within the platform
                 movingDirection: Math.random() < 0.5 ? -1 : 1, // Randomize initial direction for Type2
-                width: 20,
-                height: 20
+                width: enemyDimension,
+                height: enemyDimension
             } : null
         });
     }
