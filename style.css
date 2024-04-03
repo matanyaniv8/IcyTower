@@ -1,0 +1,68 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+#gameCanvas {
+    background-color: #87CEEB;
+}
+
+#gameOverContainer {
+    width: 80%;
+    max-width: 300px;
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    color: #D8000C;
+}
+
+#gameOverContainer h2, #gameOverContainer h3 {
+    color: #D8000C;
+}
+
+#leaderboard {
+    text-align: left;
+    margin-top: 20px;
+}
+
+#leaderboard ul {
+    background-color: #f7f7f7;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+#leaderboard li {
+    background-color: #e9e9e9;
+    padding: 8px;
+    margin-bottom: 5px;
+    border-radius: 3px;
+    font-weight: bold;
+    color: #333;
+}
+
+#playAgainButton {
+    background-color: #4CAF50; /* Green */
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 4px;
+    width: 100%; /* Makes the button expand to the full width of its parent container */
+}
+
+/* Improve overall alignment and presentation */
+body, html {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+}
