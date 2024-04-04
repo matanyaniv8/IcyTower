@@ -23,7 +23,7 @@ const playerImageScale = 2.5;
 const enemyScaleFactor = 1.5; // Example: Increase size by 50%
 const enemyDimension = 15;
 const upDownMovementThreshold = 50
-
+const platformFallingRate = 0.0001;
 // Game Variables
 let player = null
 let platforms = [];
@@ -366,10 +366,12 @@ function updateGame() {
 
         // Make the platform fall if standingTime exceeds 3 seconds (180 frames at 60fps)
         if (platform.standingTime > 180) {
-            let t = canvas.height - platform.y
-            for (let gap = t; gap > 0; gap -= 10) {
+            let goingDownSpeed = 1;
 
-                platform.y += gap * 0.01 // Make the platform fall
+            for (let gap = platform.y; gap >= 0; gap--) {
+                player.y += goingDownSpeed * platformFallingRate;
+                platform.y += goingDownSpeed * platformFallingRate; // Make the platform fall
+                goingDownSpeed += 0.5;
             }
         }
     });
