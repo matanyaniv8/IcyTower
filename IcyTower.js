@@ -5,7 +5,7 @@ const redPlatformImage = new Image();
 const playerImage = new Image();
 const movingEnemyImage = new Image();
 const constantEnemyImage = new Image();
-backgroundImage.src = './res/Background/Blue.png'; // Set the source after defining the onload handler
+backgroundImage.src = './res/background.png'; // Set the source after defining the onload handler
 playerImage.src = './res/player.png'; // Update the path to your player image
 greyPlatformImage.src = './res/greyPlatform.png';
 redPlatformImage.src = './res/redPlatform.png';
@@ -21,7 +21,8 @@ const baseJump = -10;
 // Drawing setting for player printing
 const playerImageScale = 2.5;
 const enemyScaleFactor = 1.5; // Example: Increase size by 50%
-const enemyDimension = 10;
+const enemyDimension = 15;
+const upDownMovementThreshold = 50
 
 // Game Variables
 let player = null
@@ -30,14 +31,15 @@ let platformId = 0;
 let enemySpeed = 1; // Adjust this value to find a suitable speed
 let epsilon = 0.05;
 
-initPlatformsAndPlayer();
-
+//initPlatformsAndPlayer();
 // Scoring
+
 let score = 0;
 let landedPlatforms = new Set(); // Track IDs of platforms the player has landed on
-
 // Key Listener
+
 let keys = [];
+startGame();
 window.addEventListener('keydown', function (e) {
     keys[e.keyCode] = true;
     if (e.keyCode === 32 && !player.jumping) {
@@ -111,7 +113,7 @@ function initPlatformsAndPlayer() {
         let platformWidth = hasEnemy ? 150 : 100;
         let platformY = canvas.height - (100 * i) - 50; // Calculate Y based on iteration to spread them vertically
 
-        platforms.push( {
+        platforms.push({
             id: platformId++,
             x: Math.random() * (canvas.width - platformWidth), // Random X position
             y: platformY,
@@ -123,8 +125,8 @@ function initPlatformsAndPlayer() {
             originalY: platformY, // Set originalY for moving platforms
             enemy: hasEnemy ? {
                 type: Math.random() < 0.5 ? 'Type1' : 'Type2',
-                x: Math.random() * (platformWidth - 20), // Ensure enemy is within the platform
-                movingDirection: Math.random() < 0.5 ? -1 : 1, // Randomize initial direction for Type2
+                x: Math.random() * (platformWidth - 20), // Ensure the enemy is within the platform
+                movingDirection: Math.random() < 0.5 ? -1 : 1, // Randomize an initial direction for Type2
                 width: enemyDimension,
                 height: enemyDimension
             } : null
@@ -135,13 +137,15 @@ function initPlatformsAndPlayer() {
 
 function makePlatformsMove() {
     platforms.forEach(platform => {
-        if (platform.standingTime >= 180){
+        if (platform.standingTime >= 180) {
             platform.isMoving = false;
-        }else{
+        } else {
+            // validates that no platform would move lower than "ground"/canvas's height.
+            platform.isMoving = platform.isMoving && platform.originalY + upDownMovementThreshold < canvas.height;
             if (platform.isMoving) {
-                platform.y += platform.movingDirection * 1.5 ; // Adjust speed as needed
-                // Reverse the direction when the platform moves 50 pixels from its original position
-                if (platform.y < platform.originalY - 10 || platform.y > platform.originalY + 50) {
+                platform.y += platform.movingDirection; // Adjust speed as needed
+                // Reverse the direction when the platform moves a defined threshold pixels from its original position
+                if (platform.y < platform.originalY - upDownMovementThreshold || platform.y > platform.originalY + upDownMovementThreshold) {
                     platform.movingDirection *= -1;
                 }
             }
@@ -321,7 +325,10 @@ function updateGame() {
     if (player.y < canvas.height / 4) {
         let deltaY = Math.abs(player.velY);
         player.y += deltaY;
-        platforms.forEach(platform => platform.y += deltaY);
+        platforms.forEach(platform => {
+            platform.y += deltaY;
+            platform.originalY += deltaY
+        });
     }
 
     // Reset standing time for all platforms
@@ -396,13 +403,9 @@ function updateGame() {
 
     // Check if a new platform is needed
     generateNewPlatformsIfNeeded();
-    // Optional: Remove platforms that have moved off the screen
-    //platforms = platforms.filter(platform => platform.y < canvas.height + 50);
-
     makeEnemyType2ToMove();
 
     // Drawing logic
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
     drawPlayer();
     drawPlatforms();
@@ -415,5 +418,3 @@ function updateGame() {
 }
 
 document.getElementById('playAgainButton').addEventListener('click', startGame);
-
-updateGame();
