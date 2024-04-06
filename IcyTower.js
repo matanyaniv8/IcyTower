@@ -19,8 +19,11 @@ let epsilon = 0.05;
 let invincibilityEndTime = 0; // track invincibility duration
 let score = 0;
 let landedPlatforms = new Set(); // Track IDs of platforms the player has landed on
-
+// Key Listener
+let keys = [];
 const socket = io(); // Assuming you're serving your game from the same host as your server
+// Use this token as a unique identifier for the user in your application
+const userToken = getUserToken();
 
 function reportPlayerMove() {
     if (!player) return;
@@ -40,8 +43,7 @@ socket.on('playerDisconnected', (playerId) => {
     // Handle removing the player's character from the game
 });
 
-// Key Listener
-let keys = [];
+
 startGame();
 
 window.addEventListener('keydown', function (e) {
@@ -206,29 +208,6 @@ function startGame() {
     window.requestAnimationFrame(updateGame);
 }
 
-function saveScore(score) {
-    const scores = JSON.parse(localStorage.getItem('scores')) || [];
-    scores.push(score);
-    scores.sort((a, b) => b - a);
-    scores.splice(10); // Keep only top 10 scores
-    localStorage.setItem('scores', JSON.stringify(scores));
-}
-
-function getTopScores() {
-    return JSON.parse(localStorage.getItem('scores')) || [];
-}
-
-function updateLeaderboard() {
-    const scoresList = document.getElementById('scoresList');
-    scoresList.innerHTML = ''; // Clear current list
-    const topScores = getTopScores();
-    topScores.forEach(score => {
-        const li = document.createElement('li');
-        li.textContent = score;
-        scoresList.appendChild(li);
-    });
-}
-
 function makeEnemyType2ToMove() {
     platforms.forEach(platform => {
         if (platform.enemy && platform.enemy.type === 'Type2') {
@@ -245,21 +224,8 @@ function makeEnemyType2ToMove() {
     });
 }
 
-function updateGame() {
-    // Background
-    draw();
-    makePlatformsMove();
-    // At the beginning of your game update loop, check if it's game over
-    if (isGameOver()) {
-        // Stop the game loop or handle game over
-        saveScore(score); // Assuming 'score' is your current game score
-        updateLeaderboard();
-        document.getElementById('gameOverContainer').style.display = 'block';
-        return; // Stops the animation loop
-    }
-    reportPlayerMove(); // Report the player's move at each frame update
-
-    // if player in power mode increase his base jump height.
+function updatePowerUpMode() {
+    // if the player is in power mode, increase his base jump height.
     baseJump = player.inPowerUpMode ? powerUpJumpBase : defaultBaseJump;
 
     platforms.forEach(platform => {
@@ -271,6 +237,22 @@ function updateGame() {
             }
         }
     });
+}
+
+function updateGame() {
+    // Background
+    draw();
+    makePlatformsMove();
+    updatePowerUpMode();
+
+    // At the beginning of your game update loop, check if it's game over
+    if (isGameOver()) {
+        // Stop the game loop or handle game over
+        promptForNicknameAndSaveScore(score);
+        document.getElementById('gameOverContainer').style.display = 'block';
+        return; // Stops the animation loop
+    }
+    //reportPlayerMove(); // Report the player's move at each frame update
 
     // Player movement logic
     if (keys[39]) { // Right arrow key
@@ -375,7 +357,7 @@ function updateGame() {
     // Check if a new platform is needed
     generateNewPlatformsIfNeeded();
     makeEnemyType2ToMove();
-
+    // draw at the end of every iteration
     draw();
 
     requestAnimationFrame(updateGame);
