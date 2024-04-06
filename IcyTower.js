@@ -1,23 +1,10 @@
-// Images
-const backgroundImage = new Image();
-const greyPlatformImage = new Image()
-const redPlatformImage = new Image();
-const playerImage = new Image();
-const movingEnemyImage = new Image();
-const constantEnemyImage = new Image();
-backgroundImage.src = './res/background.png'; // Set the source after defining the onload handler
-playerImage.src = './res/player.png'; // Update the path to your player image
-greyPlatformImage.src = './res/greyPlatform.png';
-redPlatformImage.src = './res/redPlatform.png';
-movingEnemyImage.src = './res/pig.png';
-constantEnemyImage.src = './res/bomb.png';
-
 // Game settings
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+
 const gravity = 0.4;
 const friction = 0.9;
-const baseJump = -10;
+const defaultBaseJump = -10;
+const powerUpJumpBase = 1.25 * defaultBaseJump;
+let baseJump = defaultBaseJump;
 // Drawing setting for player printing
 const playerImageScale = 2.5;
 const enemyScaleFactor = 1.5; // Example: Increase size by 50%
@@ -30,10 +17,9 @@ let platforms = [];
 let platformId = 0;
 let enemySpeed = 1; // Adjust this value to find a suitable speed
 let epsilon = 0.05;
+let invincibilityEndTime = 0; // track invincibility duration
 
-//initPlatformsAndPlayer();
 // Scoring
-
 let score = 0;
 let landedPlatforms = new Set(); // Track IDs of platforms the player has landed on
 // Key Listener
@@ -61,6 +47,14 @@ function generateNewPlatformsIfNeeded() {
         let newYPosition = viewportTop - 100; // Adjust based on desired spacing
         addNewPlatformAt(newYPosition);
     }
+    // power up
+    let platform = platforms[platforms.length - 1]; // Get the last platform added
+    if (platform.hasPowerup) {
+        platform.powerup = {
+            type: 'star',
+            collected: false
+        };
+    }
 }
 
 function addNewPlatformAt(yPosition) {
@@ -68,6 +62,7 @@ function addNewPlatformAt(yPosition) {
     let platformWidth = hasEnemy ? 150 : 100;
     let isMovingPlatform = Math.random() < 0.06; // Ensure moving platforms can be generated anytime
     let movingDirection = isMovingPlatform ? (Math.random() < 0.5 ? 1 : -1) : 0;
+    let hasPowerUp = Math.random() < 0.05; // 5% chance to spawn a powerup on a new platform
 
     platforms.push({
         id: platformId++,
@@ -79,6 +74,7 @@ function addNewPlatformAt(yPosition) {
         isMoving: isMovingPlatform, // Apply moving logic consistently
         movingDirection: movingDirection,
         originalY: yPosition,
+        hasPowerup : hasPowerUp,
         enemy: hasEnemy ? {
             type: Math.random() < 0.5 ? 'Type1' : 'Type2',
             x: Math.random() * (platformWidth - 20),
@@ -101,7 +97,8 @@ function initPlatformsAndPlayer() {
         speed: 5,
         velX: 0,
         velY: 0,
-        jumping: false
+        jumping: false,
+        inPowerUpMode : false
     };
     // Initialize 10 platforms at the beginning
     for (let i = 0; i < 10; i++) {
@@ -153,65 +150,6 @@ function makePlatformsMove() {
     });
 }
 
-/**
- * Draw player with a given image.
- */
-function drawPlayer() {
-    let playerHeightToAdd = canvas.height - player.y === player.height ? 10 : 0;
-
-    // Calculate the new size based on the scale factor
-    const drawWidth = player.width * playerImageScale;
-    const drawHeight = player.height * playerImageScale;
-
-    // Adjust the draw position so that the player's logical and visual positions align
-    const drawX = player.x - (drawWidth - player.width) / 2;
-    const drawY = player.y - (drawHeight - player.height) / 2;
-
-    // Draw the player image with the new size and adjusted position
-    ctx.drawImage(playerImage, drawX, drawY - playerHeightToAdd, drawWidth, drawHeight);
-}
-
-/**
- * Draw platforms according to their type.
- * Platforms with enemies on them will be colored red and will be wider.
- * Platforms without an enemy on them would be gray and less wide.
- */
-function drawPlatforms() {
-    let platformImage = null;
-    platforms.forEach(platform => {
-        platformImage = (platform.enemy) ? redPlatformImage : greyPlatformImage
-        ctx.drawImage(platformImage, platform.x, platform.y, platform.width + 5, platform.height + 10);
-        // Check if platform ID is divisible by 10 (and not the first platform)
-        if (platform.id % 10 === 0 && platform.id !== 0) {
-            ctx.fillStyle = 'white'; // Text color
-            ctx.font = '12px Arial'; // Font size and family
-            // Calculate text position to center it on the platform
-            let text = platform.id.toString();
-            let textWidth = ctx.measureText(text).width;
-            let textX = platform.x + (platform.width - textWidth) / 3;
-            let textY = platform.y + (platform.height / 2) + 6; // Adjust to center text vertically
-            ctx.fillText(text, textX, textY);
-        }
-        // Drawing Enemies
-        if (platform.enemy) {
-            let isTypeOne = platform.enemy.type === 'Type1'
-            let enemyImage = isTypeOne ? constantEnemyImage : movingEnemyImage;
-            let enemyX = platform.x + platform.enemy.x; // Calculate absolute position
-            let enemyY = platform.y - platform.enemy.height;
-
-            // New dimensions
-            const drawWidth = isTypeOne ? platform.enemy.width * enemyScaleFactor * enemyScaleFactor : platform.enemy.width * enemyScaleFactor;
-            const drawHeight = isTypeOne ? platform.enemy.height * enemyScaleFactor * enemyScaleFactor : platform.enemy.height * enemyScaleFactor;
-
-            // Adjust position to keep the enemy centered
-            const drawX = enemyX - (drawWidth - platform.enemy.width * enemyScaleFactor) / 2;
-            const drawY = isTypeOne ? enemyY - (drawHeight - platform.enemy.height * 1.5) : enemyY - (drawHeight - platform.enemy.height);
-
-            // Draw the enemy image with new size
-            ctx.drawImage(enemyImage, drawX, drawY, drawWidth * 1.3, drawHeight * 1.3);
-        }
-    });
-}
 
 /**
  * Checks if the game is over - if the player has fall to the bottom of the screen,
@@ -219,8 +157,11 @@ function drawPlatforms() {
  */
 function isGameOver() {
     let gameOver = player.y + player.height >= canvas.height && score !== 0;
-
-    if (!gameOver) {
+/*    let currentTime = Date.now();
+        if (!gameOver && currentTime < invincibilityEndTime) {
+            return false; // Player cannot die while invincible
+        }*/
+    if (!gameOver && !player.inPowerUpMode) {
         platforms.forEach(platform => {
             if (platform.enemy) {
                 let enemyX = platform.x + platform.enemy.x;
@@ -291,8 +232,7 @@ function makeEnemyType2ToMove() {
 
 function updateGame() {
     // Background
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+    draw();
     makePlatformsMove();
     // At the beginning of your game update loop, check if it's game over
     if (isGameOver()) {
@@ -302,6 +242,18 @@ function updateGame() {
         document.getElementById('gameOverContainer').style.display = 'block';
         return; // Stops the animation loop
     }
+    // if player in power mode increase his base jump height.
+    baseJump = player.inPowerUpMode ? powerUpJumpBase : defaultBaseJump;
+
+        platforms.forEach(platform => {
+            if (platform.hasPowerup){
+                if (platform.powerup && !platform.powerup.collected && player.x < platform.x + platform.width && player.x + player.width > platform.x && player.y < platform.y && player.y + player.height > platform.y) {
+                    platform.powerup.collected = true;
+                    player.inPowerUpMode = true;
+                    invincibilityEndTime = Date.now() + 8000; // 8 seconds of invincibility
+                }
+            }
+        });
 
     // Player movement logic
     if (keys[39]) { // Right arrow key
@@ -407,14 +359,7 @@ function updateGame() {
     generateNewPlatformsIfNeeded();
     makeEnemyType2ToMove();
 
-    // Drawing logic
-    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
-    drawPlayer();
-    drawPlatforms();
-
-    ctx.fillStyle = 'black';
-    ctx.font = '16px Arial';
-    ctx.fillText("Score: " + score, 10, 30);
+   draw();
 
     requestAnimationFrame(updateGame);
 }
