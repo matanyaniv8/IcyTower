@@ -1,10 +1,8 @@
 // Game settings
-
 const gravity = 0.4;
 const friction = 0.9;
 const defaultBaseJump = -10;
 const powerUpJumpBase = 1.25 * defaultBaseJump;
-let baseJump = defaultBaseJump;
 // Drawing setting for player printing
 const playerImageScale = 2.5;
 const enemyScaleFactor = 1.5; // Example: Increase size by 50%
@@ -12,18 +10,17 @@ const enemyDimension = 15;
 const upDownMovementThreshold = 50
 const platformFallingRate = 0.0001;
 // Game Variables
+let baseJump = defaultBaseJump;
 let player = null
 let platforms = [];
 let platformId = 0;
 let enemySpeed = 1; // Adjust this value to find a suitable speed
 let epsilon = 0.05;
 let invincibilityEndTime = 0; // track invincibility duration
-
-// Scoring
 let score = 0;
 let landedPlatforms = new Set(); // Track IDs of platforms the player has landed on
-// Key Listener
 
+// Key Listener
 let keys = [];
 startGame();
 window.addEventListener('keydown', function (e) {
@@ -47,14 +44,14 @@ function generateNewPlatformsIfNeeded() {
         let newYPosition = viewportTop - 100; // Adjust based on desired spacing
         addNewPlatformAt(newYPosition);
     }
-    // power up
+/*    // power up TODO: review
     let platform = platforms[platforms.length - 1]; // Get the last platform added
     if (platform.hasPowerup) {
         platform.powerup = {
             type: 'star',
             collected: false
         };
-    }
+    }*/
 }
 
 function addNewPlatformAt(yPosition) {
@@ -62,7 +59,7 @@ function addNewPlatformAt(yPosition) {
     let platformWidth = hasEnemy ? 150 : 100;
     let isMovingPlatform = Math.random() < 0.06; // Ensure moving platforms can be generated anytime
     let movingDirection = isMovingPlatform ? (Math.random() < 0.5 ? 1 : -1) : 0;
-    let hasPowerUp = Math.random() < 0.05; // 5% chance to spawn a powerup on a new platform
+    let hasPowerUp = Math.random() < 0.01; // 5% chance to spawn a powerup on a new platform
 
     platforms.push({
         id: platformId++,
@@ -75,6 +72,9 @@ function addNewPlatformAt(yPosition) {
         movingDirection: movingDirection,
         originalY: yPosition,
         hasPowerup : hasPowerUp,
+        powerup : hasPowerUp ? {
+            type: 'star',
+            collected: false} : null,
         enemy: hasEnemy ? {
             type: Math.random() < 0.5 ? 'Type1' : 'Type2',
             x: Math.random() * (platformWidth - 20),
