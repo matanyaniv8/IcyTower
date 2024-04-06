@@ -8,6 +8,9 @@ const io = socketIo(server);
 
 app.use(express.static(__dirname));
 
+/**
+ * On new connection keeps track on the New Player id, moves, connection events and update his scores to the table.
+ */
 io.on('connection', (socket) => {
     console.log(`New player connected: ${socket.id}`);
 
