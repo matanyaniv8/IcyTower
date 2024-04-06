@@ -20,9 +20,30 @@ let invincibilityEndTime = 0; // track invincibility duration
 let score = 0;
 let landedPlatforms = new Set(); // Track IDs of platforms the player has landed on
 
+const socket = io(); // Assuming you're serving your game from the same host as your server
+
+function reportPlayerMove() {
+    if (!player) return;
+    // Example of sending player position and velocity
+    socket.emit('playerMove', {x: player.x, y: player.y, velX: player.velX, velY: player.velY});
+}
+
+// Listen for other player movements
+socket.on('playerMoved', (data) => {
+    console.log(`Player ${data.id} moved to ${data.x}, ${data.y}`);
+    // You might want to update the positions of other players here
+    // This requires maintaining a list or object of player instances on the client side
+});
+
+socket.on('playerDisconnected', (playerId) => {
+    console.log(`Player ${playerId} disconnected`);
+    // Handle removing the player's character from the game
+});
+
 // Key Listener
 let keys = [];
 startGame();
+
 window.addEventListener('keydown', function (e) {
     keys[e.keyCode] = true;
     if (e.keyCode === 32 && !player.jumping) {
@@ -34,6 +55,7 @@ window.addEventListener('keyup', function (e) {
     keys[e.keyCode] = false;
 });
 
+
 function generateNewPlatformsIfNeeded() {
     // Assuming the game scrolls vertically and new platforms should appear at the top
     const viewportTop = Math.min(...platforms.map(p => p.y));
@@ -44,14 +66,6 @@ function generateNewPlatformsIfNeeded() {
         let newYPosition = viewportTop - 100; // Adjust based on desired spacing
         addNewPlatformAt(newYPosition);
     }
-/*    // power up TODO: review
-    let platform = platforms[platforms.length - 1]; // Get the last platform added
-    if (platform.hasPowerup) {
-        platform.powerup = {
-            type: 'star',
-            collected: false
-        };
-    }*/
 }
 
 function addNewPlatformAt(yPosition) {
@@ -71,10 +85,11 @@ function addNewPlatformAt(yPosition) {
         isMoving: isMovingPlatform, // Apply moving logic consistently
         movingDirection: movingDirection,
         originalY: yPosition,
-        hasPowerup : hasPowerUp,
-        powerup : hasPowerUp ? {
+        hasPowerup: hasPowerUp,
+        powerup: hasPowerUp ? {
             type: 'star',
-            collected: false} : null,
+            collected: false
+        } : null,
         enemy: hasEnemy ? {
             type: Math.random() < 0.5 ? 'Type1' : 'Type2',
             x: Math.random() * (platformWidth - 20),
@@ -98,7 +113,7 @@ function initPlatformsAndPlayer() {
         velX: 0,
         velY: 0,
         jumping: false,
-        inPowerUpMode : false
+        inPowerUpMode: false
     };
     // Initialize 10 platforms at the beginning
     for (let i = 0; i < 10; i++) {
@@ -157,10 +172,10 @@ function makePlatformsMove() {
  */
 function isGameOver() {
     let gameOver = player.y + player.height >= canvas.height && score !== 0;
-/*    let currentTime = Date.now();
-        if (!gameOver && currentTime < invincibilityEndTime) {
-            return false; // Player cannot die while invincible
-        }*/
+    /*    let currentTime = Date.now();
+            if (!gameOver && currentTime < invincibilityEndTime) {
+                return false; // Player cannot die while invincible
+            }*/
     if (!gameOver && !player.inPowerUpMode) {
         platforms.forEach(platform => {
             if (platform.enemy) {
@@ -242,18 +257,20 @@ function updateGame() {
         document.getElementById('gameOverContainer').style.display = 'block';
         return; // Stops the animation loop
     }
+    reportPlayerMove(); // Report the player's move at each frame update
+
     // if player in power mode increase his base jump height.
     baseJump = player.inPowerUpMode ? powerUpJumpBase : defaultBaseJump;
 
-        platforms.forEach(platform => {
-            if (platform.hasPowerup){
-                if (platform.powerup && !platform.powerup.collected && player.x < platform.x + platform.width && player.x + player.width > platform.x && player.y < platform.y && player.y + player.height > platform.y) {
-                    platform.powerup.collected = true;
-                    player.inPowerUpMode = true;
-                    invincibilityEndTime = Date.now() + 8000; // 8 seconds of invincibility
-                }
+    platforms.forEach(platform => {
+        if (platform.hasPowerup) {
+            if (platform.powerup && !platform.powerup.collected && player.x < platform.x + platform.width && player.x + player.width > platform.x && player.y < platform.y && player.y + player.height > platform.y) {
+                platform.powerup.collected = true;
+                player.inPowerUpMode = true;
+                invincibilityEndTime = Date.now() + 8000; // 8 seconds of invincibility
             }
-        });
+        }
+    });
 
     // Player movement logic
     if (keys[39]) { // Right arrow key
@@ -359,7 +376,7 @@ function updateGame() {
     generateNewPlatformsIfNeeded();
     makeEnemyType2ToMove();
 
-   draw();
+    draw();
 
     requestAnimationFrame(updateGame);
 }
