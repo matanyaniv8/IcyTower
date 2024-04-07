@@ -25,6 +25,7 @@ const socket = io(); // Assuming you're serving your game from the same host as 
 // Use this token as a unique identifier for the user in your application
 const userToken = getUserToken();
 
+
 function reportPlayerMove() {
     if (!player) return;
     // Example of sending player position and velocity
@@ -40,9 +41,9 @@ socket.on('playerMoved', (data) => {
 
 socket.on('playerDisconnected', (playerId) => {
     console.log(`Player ${playerId} disconnected`);
+
     // Handle removing the player's character from the game
 });
-
 
 startGame();
 
@@ -248,7 +249,9 @@ function updateGame() {
     // At the beginning of your game update loop, check if it's game over
     if (isGameOver()) {
         // Stop the game loop or handle game over
-        promptForNicknameAndSaveScore(score);
+        saveScore(promptForNickname(), score);
+        submitScore(promptForNickname(), score);
+        fetchAndDisplayLeaderboard();
         document.getElementById('gameOverContainer').style.display = 'block';
         return; // Stops the animation loop
     }
@@ -362,5 +365,8 @@ function updateGame() {
 
     requestAnimationFrame(updateGame);
 }
+document.getElementById('viewLeaderboardButton').addEventListener('click', function() {
+    fetchAndDisplayLeaderboard();
+});
 
 document.getElementById('playAgainButton').addEventListener('click', startGame);
