@@ -43,6 +43,75 @@ window.addEventListener('keyup', function (e) {
     keys[e.keyCode] = false;
 });
 
+// Touch capabilities
+window.addEventListener('touchstart', handleTouchStart, false);
+window.addEventListener('touchmove', handleTouchMove, false);
+window.addEventListener('touchend', handleTouchEnd, false);
+
+
+let xDown = null;
+let yDown = null;
+
+function handleTouchStart(evt) {
+    const firstTouch = evt.touches[0];
+    xDown = firstTouch.clientX;
+    yDown = firstTouch.clientY;
+}
+
+function handleTouchEnd(evt){
+    // Reset horizontal movement keys
+    keys[37] = false; // Reset left arrow key status
+    keys[39] = false; // Reset right arrow key status
+    player.velX = 0
+}
+
+function handleTouchMove(evt) {
+    if (!xDown || !yDown) {
+        return;
+    }
+
+    let xUp = evt.touches[0].clientX;
+    let yUp = evt.touches[0].clientY;
+    let moveFactor = 2
+    let xDiff = xDown - xUp;
+    let yDiff = yDown - yUp;
+
+    if (Math.abs(xDiff) > Math.abs(yDiff)) {
+        // Horizontal movement
+        if (xDiff > 0) {
+            // Left swipe
+            keys[37] = true;
+            player.velX += player.speed * -moveFactor; // Move left
+        } else {
+            // Right swipe
+            keys[39] = true;
+            player.velX += moveFactor * player.speed; // Move right
+        }
+    } else {
+        // Vertical movement
+        if (yDiff > 0) {
+            // Up swipe, initiate jump
+            if (!player.jumping) {
+                player.jumping = true;
+                player.velY = baseJump * 1.5;
+
+                // Apply horizontal movement during the jump based on the direction of the swipe
+                if (xDiff > 0) {
+                    // Jumping left
+                    player.velX += player.speed * -moveFactor;
+                } else if (xDiff < 0) {
+                    // Jumping right
+                    player.velX += moveFactor * player.speed;
+                }
+            }
+        }
+        // Down swipe not handled, as it wasn't defined in the original setup
+    }
+
+    // Reset touch coordinates
+    xDown = null;
+    yDown = null;
+}
 /**
  * The main loop of the game.
  * where the magic happens.

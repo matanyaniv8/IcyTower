@@ -2,10 +2,37 @@ body, html {
     margin: 0;
     padding: 0;
     overflow: hidden;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
 }
 
 #gameCanvas {
     background-color: #87CEEB;
+    max-width: 95%; /* Responsive width for desktop */
+    margin: auto; /* Center align on page for desktop */
+    display: block; /* Ensure it's treated as a block element */
+    position: relative; /* Position relative to its normal position */
+}
+
+@media (orientation: portrait) {
+    /* Adjustments for smaller (mobile) screens in portrait orientation */
+    body, html {
+        justify-content: flex-start; /* Align canvas to the top for mobile */
+        height: auto; /* Allow body to be smaller than 100vh */
+        min-height: 100vh; /* Ensure body is at least the height of the viewport */
+    }
+
+    #gameCanvas {
+        width: 100vw; /* Full screen width on mobile */
+        height: 90vh; /* 90% of the viewport height to leave a gap at the bottom */
+        margin: 0; /* Remove margin for full screen width */
+        max-width: none; /* Override max width */
+        position: absolute; /* Make canvas position absolute to allow for top alignment */
+        top: 0; /* Align top of canvas with top of page */
+    }
 }
 
 #gameOverContainer {
@@ -16,6 +43,10 @@ body, html {
     padding: 20px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     color: #D8000C;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 #gameOverContainer h2, #gameOverContainer h3 {
@@ -55,14 +86,16 @@ body, html {
     margin: 4px 2px;
     cursor: pointer;
     border-radius: 4px;
-    width: 100%; /* Makes the button expand to the full width of its parent container */
+    width: 100%; /* Full width */
 }
 
-/* Improve overall alignment and presentation */
-body, html {
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: Arial, sans-serif;
+@media (max-width: 768px) {
+    #playAgainButton {
+        padding: 20px 40px;
+        font-size: 18px; /* Larger font for touch devices */
+    }
+
+    #leaderboard li {
+        padding: 12px; /* Larger touch targets */
+    }
 }
