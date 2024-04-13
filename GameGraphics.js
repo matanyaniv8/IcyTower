@@ -1,5 +1,4 @@
 // Images
-const backgroundImage = new Image();
 const greyPlatformImage = new Image()
 const redPlatformImage = new Image();
 const playerImage = new Image();
@@ -7,13 +6,35 @@ const movingEnemyImage = new Image();
 const constantEnemyImage = new Image();
 const starPowerupImage = new Image();
 starPowerupImage.src = './res/star.png'; // Update the path to your star powerup image
-backgroundImage.src = './res/Background/Blue.png'; // Set the source after defining the onload handler
 playerImage.src = './res/player.png'; // Update the path to your player image
 greyPlatformImage.src = './res/greyPlatform.png';
 redPlatformImage.src = './res/redPlatform.png';
 movingEnemyImage.src = './res/pig.png';
 constantEnemyImage.src = './res/bomb.png';
+// Define the paths to the images
+const backgroundPaths = [
+    './res/Background/Blue.png',
+    './res/Background/Pink.png',
+    './res/Background/Green.png',
+    './res/Background/Yellow.png',
+    './res/Background/Purple.png',
+    './res/Background/Gray.png',
+    './res/Background/Brown.png'
+];
 
+//changing the background image every few seconds
+let lastBackgroundChangeTime = Date.now();
+const backgroundChangeInterval = 5000; // Change background every 5000 milliseconds (5 seconds)
+
+// Create an array to store the Image objects
+const backgroundImages = backgroundPaths.map(path => {
+    let img = new Image();
+    img.src = path;
+    return img;
+});
+
+// Variable to keep track of which background to draw
+let currentBackgroundIndex = 0;
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -33,10 +54,21 @@ function draw() {
  */
 function drawBackground() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let backgroundImage = backgroundImages[currentBackgroundIndex];
+
     for (let y = 0; y < canvas.height; y += 64) { // Tile vertically
         for (let x = 0; x < canvas.width; x += 64) { // Tile horizontally
             ctx.drawImage(backgroundImage, x, y, 64, 64);
         }
+    }
+
+    updateBackgroundIndex();
+}
+
+function updateBackgroundIndex() {
+    if (Date.now() - lastBackgroundChangeTime > backgroundChangeInterval) {
+        currentBackgroundIndex = (currentBackgroundIndex + 1) % backgroundImages.length;
+        lastBackgroundChangeTime = Date.now();
     }
 }
 
