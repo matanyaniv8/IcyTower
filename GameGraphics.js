@@ -24,7 +24,7 @@ const backgroundPaths = [
 
 //changing the background image every few seconds
 let lastBackgroundChangeTime = Date.now();
-const backgroundChangeInterval = 5000; // Change background every 5000 milliseconds (5 seconds)
+const backgroundChangeInterval = 6000; // Change background every 6000 milliseconds (6 seconds)
 
 // Create an array to store the Image objects
 const backgroundImages = backgroundPaths.map(path => {
@@ -61,7 +61,7 @@ function drawBackground() {
             ctx.drawImage(backgroundImage, x, y, 64, 64);
         }
     }
-
+    // Updates the background image if needed.
     updateBackgroundIndex();
 }
 

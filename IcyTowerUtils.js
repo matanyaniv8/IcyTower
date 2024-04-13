@@ -41,7 +41,7 @@ function addNewPlatformAt(yPosition) {
     let platformWidth = hasEnemy ? 150 : 100;
     let isMovingPlatform = Math.random() < 0.06; // Ensure moving platforms can be generated anytime
     let movingDirection = isMovingPlatform ? (Math.random() < 0.5 ? 1 : -1) : 0;
-    let hasPowerUp = Math.random() < 0.01; // 5% chance to spawn a powerup on a new platform
+    let hasPowerUp = Math.random() < 0.05; // 5% chance to spawn a powerup on a new platform
 
     platforms.push({
         id: platformId++,
