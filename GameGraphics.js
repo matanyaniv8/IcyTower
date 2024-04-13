@@ -33,7 +33,11 @@ function draw() {
  */
 function drawBackground() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+    for (let y = 0; y < canvas.height; y += 64) { // Tile vertically
+        for (let x = 0; x < canvas.width; x += 64) { // Tile horizontally
+            ctx.drawImage(backgroundImage, x, y, 64, 64);
+        }
+    }
 }
 
 /**
