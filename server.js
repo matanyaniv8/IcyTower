@@ -8,7 +8,6 @@ const socketIo = require('socket.io');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
-
 const app = express('./app');
 const server = http.createServer(app);
 const io = socketIo(server);
