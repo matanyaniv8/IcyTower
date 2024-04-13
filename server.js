@@ -1,6 +1,6 @@
 /**
  * Node.js server for IcyTower Game.
-
+ * @type {e | (() => Express)}
  */
 const express = require('express');
 const http = require('http');
@@ -8,7 +8,7 @@ const socketIo = require('socket.io');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
-const app = express('./app');
+const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 const scoresFilePath = path.join(__dirname, 'scores.json');
