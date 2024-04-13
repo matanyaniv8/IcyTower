@@ -2,13 +2,12 @@
  * IcyTower score manager.
  * Passes if needed to the server the player's scores and updates back the score table.
  */
-let randomUserNum = 0;
 let numOfDifferentTokens = 0;
 
 function saveScore(nickname, score) {
     const scoreKey = numOfDifferentTokens > 1 ? 'multiplayerScores' : 'singlePlayerScores';
     let scores = JSON.parse(localStorage.getItem(scoreKey)) || [];
-
+    nickname = nickname === null || nickname ==="" ? `Random Player`: nickname;
     scores.push({nickname, score});
     // Sort scores in descending order based on score
     scores.sort((a, b) => b.score - a.score);
@@ -18,9 +17,6 @@ function saveScore(nickname, score) {
     localStorage.setItem(scoreKey, JSON.stringify(scores));
     submitScore(nickname, score);
     updateLeaderboard(score);
-    console.log(numOfDifferentTokens);
-    /*    if (numOfDifferentTokens > 1) {
-        }*/
 }
 
 
@@ -43,7 +39,6 @@ function updateLeaderboard(score) {
             scoresList.appendChild(li);
         });
     }
-    //fetchAndDisplayLeaderboard();
 }
 
 
@@ -51,15 +46,16 @@ function promptForNickname() {
     let nickname = localStorage.getItem('nickname');
     if (nickname == null) {
         nickname = prompt("Enter your nickname for the leaderboard:");
-        localStorage.setItem('nickname', nickname ? nickname.trim() : `Random Player ${++randomUserNum}`);
+        localStorage.setItem('nickname', nickname ? nickname.trim() : `Random Player`);
     }
+
     return nickname;
 }
 
 function generateUserToken() {
     // Simple UUID v4 generation, consider using a library for more robust UUID generation
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
     });
 }
@@ -75,6 +71,7 @@ function getUserToken() {
 }
 
 function submitScore(nickname, score) {
+    //nickname = nickname === null ? `Random Player ${++randomUserNum}`: nickname;
     fetch('/submit-score', {
         method: 'POST',
         headers: {

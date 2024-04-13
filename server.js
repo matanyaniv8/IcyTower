@@ -9,7 +9,7 @@ const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
 
-const app = express();
+const app = express('./app');
 const server = http.createServer(app);
 const io = socketIo(server);
 const scoresFilePath = path.join(__dirname, 'scores.json');
