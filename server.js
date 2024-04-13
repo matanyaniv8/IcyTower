@@ -1,6 +1,6 @@
 /**
  * Node.js server for IcyTower Game.
- * @type {e | (() => Express)}
+
  */
 const express = require('express');
 const http = require('http');
