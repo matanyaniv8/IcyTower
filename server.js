@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /**
  * Node.js server for IcyTower Game.
  * @type {e | (() => Express)}
