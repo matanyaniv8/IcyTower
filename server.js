@@ -16,6 +16,11 @@ const scoresFilePath = path.join(__dirname, 'scores.json');
 
 app.use(express.static(__dirname));
 app.use(bodyParser.json());
+// Configure Keep-Alive
+server.keepAliveTimeout = 30000; // Keep-alive timeout (30 seconds)
+server.headersTimeout = 31000; // Headers timeout should be a little longer than keepAliveTimeout
+server.maxHeadersCount = 1000; // Maximum number of headers
+
 
 const readScores = (callback) => {
     fs.readFile(scoresFilePath, (err, data) => {
