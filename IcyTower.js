@@ -6,6 +6,7 @@ let keys = [];
 const socket = io(); // Assuming you're serving your game from the same host as your server
 // Use this token as a unique identifier for the user in your application
 const userToken = getUserToken();
+let lastPlatfromLandedId = 0 ;
 
 // Future functionality
 function reportPlayerMove() {
@@ -177,7 +178,8 @@ function updateGame() {
 
             // Mark platform as landed for scoring
             if (!landedPlatforms.has(platform.id)) {
-                score++;
+                score += platform.id - lastPlatfromLandedId;
+                lastPlatfromLandedId = platform.id
                 // Once the player gets up with scores,
                 // increase the moving enemies speed for a more challenging game.
                 enemySpeed = enemySpeed < 2 ? enemySpeed + epsilon : enemySpeed;
