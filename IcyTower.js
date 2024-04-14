@@ -6,7 +6,6 @@ let keys = [];
 const socket = io(); // Assuming you're serving your game from the same host as your server
 // Use this token as a unique identifier for the user in your application
 const userToken = getUserToken();
-let lastPlatfromLandedId = 0 ;
 
 // Future functionality
 function reportPlayerMove() {

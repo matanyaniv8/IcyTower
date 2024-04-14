@@ -23,6 +23,7 @@ let epsilon = 0.05;
 let invincibilityEndTime = 0; // track invincibility duration
 let score = 0;
 let landedPlatforms = new Set(); // Track IDs of platforms the player has landed on
+let lastPlatfromLandedId = 0 ;
 
 function generateNewPlatformsIfNeeded() {
     // Assuming the game scrolls vertically and new platforms should appear at the top
@@ -168,6 +169,7 @@ function startGame() {
     score = 0;
     landedPlatforms.clear()
     initPlatformsAndPlayer();
+    lastPlatfromLandedId = 0;
     // Hide the game over container
     document.getElementById('gameOverContainer').style.display = 'none';
     window.requestAnimationFrame(updateGame);
