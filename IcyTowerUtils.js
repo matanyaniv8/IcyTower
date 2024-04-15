@@ -25,6 +25,9 @@ let score = 0;
 let landedPlatforms = new Set(); // Track IDs of platforms the player has landed on
 let lastPlatfromLandedId = 0 ;
 
+/**
+ * Checks if there are enough platforms currently on the canvas and if not generate them.
+ */
 function generateNewPlatformsIfNeeded() {
     // Assuming the game scrolls vertically and new platforms should appear at the top
     const viewportTop = Math.min(...platforms.map(p => p.y));
@@ -37,6 +40,9 @@ function generateNewPlatformsIfNeeded() {
     }
 }
 
+/**
+ * Adding a new Platform at a given location in the canvas.
+ */
 function addNewPlatformAt(yPosition) {
     let hasEnemy = Math.random() < 0.05;
     let platformWidth = hasEnemy ? 150 : 100;
@@ -140,15 +146,11 @@ function makePlatformsMove() {
  */
 function isGameOver() {
     let gameOver = player.y + player.height >= canvas.height && score !== 0;
-    /*    let currentTime = Date.now();
-            if (!gameOver && currentTime < invincibilityEndTime) {
-                return false; // Player cannot die while invincible
-            }*/
     if (!gameOver && !player.inPowerUpMode) {
         platforms.forEach(platform => {
             if (platform.enemy) {
                 let enemyX = platform.x + platform.enemy.x;
-                let enemyY = platform.y - platform.enemy.height; // Assuming the enemy is on top of the platform
+                let enemyY = platform.y - platform.enemy.height;
 
                 // Check for collision with the enemy
                 if (player.x < enemyX + platform.enemy.width &&

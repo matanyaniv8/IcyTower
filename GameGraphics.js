@@ -1,3 +1,6 @@
+/**
+ * Graphics Manager
+ */
 // Images
 const greyPlatformImage = new Image()
 const redPlatformImage = new Image();
@@ -38,6 +41,9 @@ let currentBackgroundIndex = 0;
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+/**
+ * Draws the Game
+ */
 function draw() {
     // Drawing logic
     drawBackground();
@@ -100,14 +106,17 @@ function drawPlayer() {
     ctx.drawImage(playerImage, drawX, drawY - playerHeightToAdd, drawWidth, drawHeight);
 }
 
+/**
+ * Drawing the powerups on the platforms.
+ */
 function drawPowerups() {
     platforms.forEach(platform => {
         if (platform.hasPowerup && !player.inPowerUpMode) {
             if (!platform.powerup.collected) {
                 // Assuming the powerup's position is at the center of the platform
-                const powerupX = platform.x + (platform.width / 2) - 10; // Adjust X to place it in the middle of the platform
-                const powerupY = platform.y - 20; // Adjust Y so the powerup appears above the platform
-                ctx.drawImage(starPowerupImage, powerupX, powerupY, 20, 20); // Adjust size as needed
+                const powerupX = platform.x + (platform.width / 2) - 10;
+                const powerupY = platform.y - 20;
+                ctx.drawImage(starPowerupImage, powerupX, powerupY, 20, 20);
             }
         }
     });
